@@ -11,26 +11,27 @@ cloudinary.config({
 });
 
 
+
 const uploadOnCloudinary = async (localFilePath) => {
-    // Check if the localFilePath is provided
-    if (!localFilePath) {
-        console.log("Local File Path Not Provided");
-        return null;
-    }
-
-    // Log the file path being processed
-    console.log("Processing file:", localFilePath);
-
     try {
+        // Check if the localFilePath is provided
+        if (!localFilePath) {
+            console.log("Local File Path Not Provided");
+            return null;
+        }
+
+        // Log the file path being processed
+        console.log("Processing file:", localFilePath);
+        
         // Upload the file to Cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto"
+            resource_type: "auto",
         });
 
         // Log the successful upload
         console.log("File uploaded to Cloudinary:", response.url);
 
-        // Remove the file after a successful upload
+        // Removing the file from public/temp after a successful upload
         if (fs.existsSync(localFilePath)) {
             fs.unlinkSync(localFilePath);
         }
@@ -39,7 +40,7 @@ const uploadOnCloudinary = async (localFilePath) => {
         // Log the error details
         console.error("Upload to Cloudinary failed:", error);
 
-        // Ensure the file is removed even if the upload fails
+        // Ensuring the file is removed from pubic/temp even if the upload fails
         if (fs.existsSync(localFilePath)) {
             fs.unlinkSync(localFilePath);
         }

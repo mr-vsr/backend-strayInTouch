@@ -113,10 +113,10 @@ const loginUser = asyncHandler(async (req, res) => {
     //access and referesh token
     //send cookie
 
-    const { email, password } = req.body;
+    const {email, password } = req.body;
 
     if (!email) {
-        throw new ApiError(400, "username or email is required");
+        throw new ApiError(400, "email is required");
     }
 
     const user = await User.findOne({
@@ -182,7 +182,7 @@ const logoutUser = asyncHandler(async (req, res) => {
                 {},
                 "User loggedOut"))
 
-})
+});
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
 
@@ -192,6 +192,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized access");
     }
 
+    // console.log("Refresh Token from body ",incomingRefreshToken);
     try {
         const decodedToken = jwt.verify(
             incomingRefreshToken,
@@ -199,13 +200,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         );
 
         const user = await User.findById(decodedToken?._id);
-
+        
         if (!user) {
             throw new ApiError(401, "Invalid refresh token");
         }
+        console.log(user);
+        
+        const currentUserRefreshToken = user.refreshToken;
+        console.log("Refresh Token from db ",currentUserRefreshToken);
 
-        if (incomingRefreshToken !== user?.refreshToken) {
-
+        if (incomingRefreshToken !== user.refreshToken) {
             throw new ApiError(401, "Refresh Token expired");
         }
 
@@ -230,18 +234,25 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
                     "Access token refreshed"
                 )
             )
-
     } catch (error) {
         throw new ApiError(
             401,
             error?.message || "Invalid refresh Token"
         )
     }
-
-})
+});
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
+
     const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    const user = await User.findById(req.user?._id);
+
+    const isOldPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+
+    if (!isOldPasswordCorrect) {
+        throw new ApiError(400, "Incorrect Password! Please Enter correct password!");
+    }
 
     if (oldPassword === newPassword) {
         throw new ApiError(401, "New password cannot be same as old password");
@@ -251,13 +262,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Passwords does not match!");
     }
 
-    const user = await User.findById(req.user?._id);
 
-    const isOldPasswordCorrect = await user.isPasswordCorrect(oldPassword);
-
-    if (!isOldPasswordCorrect) {
-        throw new ApiError(400, "Invalid Password entered");
-    }
 
     user.password = newPassword;
 
@@ -273,7 +278,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
             )
         )
 
-})
+});
 
 const getCurrentUser = asyncHandler(async (req, res) => {
     return res
@@ -285,13 +290,13 @@ const getCurrentUser = asyncHandler(async (req, res) => {
                 "User fetched successfully"
             )
         )
-})
+});
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
 
-    const { name, email } = req.body;
+    const { name, email, contact } = req.body;
 
-    if (!name || !email) {
+    if (!name || !email || !contact) {
         throw new ApiError(400, "All fields are required");
     }
 
@@ -300,7 +305,8 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         {
             $set: {
                 name,
-                email
+                email,
+                contact
             }
         },
         {
