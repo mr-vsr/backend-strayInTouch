@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "backend for strayInTouch",
   "main": "server.js",
+  "type": "module",
   "scripts": {
-    "test": "nodemon server.js"
+    "start": "nodemon ./src/server.js"
   },
   "author": "Vikas Rai",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cloudinary": "^2.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
