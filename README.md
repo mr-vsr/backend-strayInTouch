@@ -1,6 +1,3 @@
-Here’s a `README.md` file that includes the instructions you mentioned:
-
-```markdown
 # Backend Server
 
 This is a Node.js backend server application.
