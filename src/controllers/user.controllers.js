@@ -8,6 +8,7 @@ import {
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 import { getPublicId } from "../utils/getPublicId.js";
+import { v2 as cloudinary } from 'cloudinary';
 
 
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -69,8 +70,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //Uploading the images from local storage to on cloudinary server
     // console.log(avatarLocalPath);
+    
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     console.log(avatar);
+
 
     if (!avatar) {
         throw new ApiError(400, "Avatar file is required cloudinary");
