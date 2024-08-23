@@ -14,11 +14,11 @@ To get a local copy of this project up and running, follow these steps:
 
 ### 1. Create a Directory
 
-First, create a directory where you want to clone the project:
+First, create a directory where you want to clone the project source code:
 
 ```bash
-mkdir <your-directory-name>
-cd <your-directory-name>
+mkdir <directory-name>
+cd <directory-name>
 ```
 
 ### 2. Clone the Repository
@@ -39,13 +39,13 @@ npm install
 
 ### 4. Start the Server
 
-Finally, start the server:
+Finally, start the server in development environment:
 
 ```bash
-npm start
+npm run dev
 ```
 
-The server should now be running, and you can access it at `http://localhost:<your-port>` (replace `<your-port>` with the actual port number configured in your project).
+The server should now be running, and you can access it at `http://localhost:5000`
 
 ## Environment Variables
 
