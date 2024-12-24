@@ -8,7 +8,7 @@ import {
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 import { getPublicId } from "../utils/getPublicId.js";
-import { v2 as cloudinary } from 'cloudinary';
+
 
 
 const generateAccessAndRefreshTokens = async (userId) => {

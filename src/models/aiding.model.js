@@ -4,7 +4,6 @@ const aidingSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User', 
-        required: true
     },
     ngo: {
         type: mongoose.Schema.Types.ObjectId,
@@ -27,4 +26,4 @@ const aidingSchema = new mongoose.Schema({
 
 const Aiding = mongoose.model('Aiding', aidingSchema);
 
-export default Aiding;
+export { Aiding };

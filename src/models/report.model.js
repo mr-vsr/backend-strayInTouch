@@ -4,7 +4,6 @@ const reportSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
     },
     description: {
         type: String,
@@ -50,4 +49,4 @@ const reportSchema = new mongoose.Schema({
 
 const Report = mongoose.model('Report', reportSchema);
 
-export default Report;
+export { Report};
