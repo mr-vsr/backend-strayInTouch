@@ -14,15 +14,11 @@ const reportSchema = new mongoose.Schema({
         type: String,
         trim: true,
     }],
-    coordinate: {
-        latitude: {
-            type: Number,
-            required: true,
-        },
-        longitude: {
-            type: Number,
-            required: true,
-        }
+    latitude: {
+        type: Number,
+    },
+    longitude: {
+        type: Number,
     },
     location: {
         type: String,
@@ -36,7 +32,7 @@ const reportSchema = new mongoose.Schema({
     },
     aiding: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:'Aiding'
+        ref: 'Aiding'
     },
     priority: {
         type: String,
@@ -49,4 +45,4 @@ const reportSchema = new mongoose.Schema({
 
 const Report = mongoose.model('Report', reportSchema);
 
-export { Report};
+export { Report };

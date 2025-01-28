@@ -43,7 +43,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // console.log(req.body);
 
-    const { name, contact, email, gender, password } = req.body
+    const { name, contact, email, gender, password, role } = req.body
 
     if ([name, contact, email, gender, password].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "Fields cann't be left empty");
@@ -70,91 +70,109 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //Uploading the images from local storage to on cloudinary server
     // console.log(avatarLocalPath);
-    
+
     const avatar = await uploadOnCloudinary(avatarLocalPath);
-    console.log(avatar);
+    // console.log(avatar);
 
 
     if (!avatar) {
         throw new ApiError(400, "Avatar file is required cloudinary");
     }
 
-    //pushing all the data entered by the user into the database
-    const user = await User.create({
-        name,
-        avatar: avatar.url,
-        email,
-        contact,
-        gender,
-        password,
-    });
+    const userRole = role || 'user';
 
-    //Removing the password and refreshToken fields form the user after it is being created
-    const isUserCreated = await User.findById(user._id).select(
-        "-password -refreshToken"
-    );
+    try {
+        // Create user in the database
+        const user = await User.create({
+            name,
+            avatar: avatar.url,
+            email,
+            contact,
+            gender,
+            password,
+            role: userRole,
+        });
 
-    if (!isUserCreated) {
-        throw new ApiError(500, "Something went wrong while registering the user!");
+        // Removing sensitive fields before sending the response
+        const isUserCreated = await User.findById(user._id).select("-password -refreshToken");
+
+        if (!isUserCreated) {
+            throw new ApiError(500, "Something went wrong while registering the user!");
+        }
+
+        // Send success response
+        res.status(201).json(
+            new ApiResponse(
+                201,
+                isUserCreated,
+                "User registered successfully"
+            )
+        );
+    } catch (error) {
+        // Catching MongoDB duplicate error or any other unexpected error
+        if (error.code === 11000) {
+            if (error.keyPattern.contact) {
+                throw new ApiError(409, `Contact number ${contact} is already in use.`);
+            }
+            if (error.keyPattern.email) {
+                throw new ApiError(409, `Email ${email} is already in use.`);
+            }
+        }
+
+        // For other errors, throw the original error
+        throw new ApiError(500, error.message || "An unexpected error occurred");
     }
-
-    //Sending a response 
-    res.status(201).json(
-        new ApiResponse(
-            201,
-            isUserCreated,
-            "User registered successfully"
-        )
-    );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    // req body -> data
-    // username or email
-    //find the user
-    //password check
-    //access and referesh token
-    //send cookie
+    const { email, password } = req.body;
 
-    const {email, password } = req.body;
-
-    if (!email) {
-        throw new ApiError(400, "email is required");
+    if (!email || !password) {
+        throw new ApiError(400, "Email and password are required");
     }
 
-    const user = await User.findOne({
-        $or: [{ email }]
-    });
+    // Find the user by email
+    const user = await User.findOne({ email });
 
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // Check if the password is correct
     const isPasswordValid = await user.isPasswordCorrect(password);
-
     if (!isPasswordValid) {
-        throw new ApiError(401, "User doesn't exist");
+        throw new ApiError(401, "Incorrect password");
     }
 
+    // Generate the access token and refresh token
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
+    // Exclude password and refreshToken from the user response
     const loggedUser = await User.findById(user._id).select("-password -refreshToken");
 
-    const options = {
-        httpOnly: true,
-        secure: true,
-    }
+    // Set up cookie options
+    // const options = {
+    //     httpOnly: true,
+    //     secure: process.env.NODE_ENV === "production", // Set to true in production
+    // };
 
     return res
         .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken)
+        .cookie("refreshToken", refreshToken)
         .json(
             new ApiResponse(
                 200,
                 {
-                    user: loggedUser, accessToken, refreshToken
+                    user: loggedUser,
+                    accessToken,
+                    refreshToken,
                 },
-                "user logged in successfully"
+                "User logged in successfully"
             )
-        )
+        );
 });
+
 
 const logoutUser = asyncHandler(async (req, res) => {
 

@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken"
 import { Ngo } from "../models/ngo.model.js";
 
-export const verifyJWT = asyncHandler(async (req, res, next) => {
+const verifyNgoJWT = asyncHandler(async (req, res, next) => {
     try {
 
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
@@ -27,4 +27,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid access token");
     }
-})
+});
+
+export { verifyNgoJWT}
